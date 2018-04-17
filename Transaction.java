@@ -44,14 +44,12 @@ public class Transaction implements Datatype {
 		return attrNames;
 	}
 
-	@Override
 	public String getValue(String key) {
 		if (this.attributes.containsKey(key)) {
 			return this.attributes.get(key);
 		} return null;
 	}
-	
-	@Override
+
 	public void setValue(String key, String value) {
 		if (this.attributes.containsKey(key)) {
 			this.attributes.put(key, value);

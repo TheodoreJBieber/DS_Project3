@@ -71,19 +71,13 @@ public final class DataWriter {
 		}
 
 	}
-	
-	// return primary key
-	public String getPrevPK(ArrayList<String> prevPKList) {
-		Random rand = new Random();
-		int idx = rand.nextInt(prevPKList.size());
-		return prevPKList.get(idx);
-	}
-	
+
+
 	public void writeToCSV(File csv, Datatype entry, Boolean collectPKs) throws IOException {
 		FileWriter fw = new FileWriter(csv.getName(), true); // append to end of file
-	    BufferedReader br = new BufferedReader(new FileReader(csv.getName()));
+		BufferedReader br = new BufferedReader(new FileReader(csv.getName()));
 		String value;
-		
+
 		for (String attr : entry.getAttributes()) {
 			// this value must be unique, use BufferedReader to ensure other entries do not have it
 			if (entry.getPrimaryKey().equals(attr)) {
@@ -99,16 +93,19 @@ public final class DataWriter {
 					fw.write("," + value);
 			}
 		}
-		
+
 		// add newline for next entry
 		fw.write("\n");
-		
+
 		br.close();
 		fw.close();
 	}
-	
-	
 
-	
+	// return primary key
+	public String getPrevPK(ArrayList<String> prevPKList) {
+		Random rand = new Random();
+		int idx = rand.nextInt(prevPKList.size());
+		return prevPKList.get(idx);
+	}
 
 }

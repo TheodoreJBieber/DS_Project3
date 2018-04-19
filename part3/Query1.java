@@ -8,33 +8,30 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
 public class Query1 {
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
+	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
 	    private Text word = new Text();
-	    private Text custInfo = new Text();
+	    private String custInfo;
 	
 	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	        String line = value.toString();
-	        StringTokenizer tokenizer = new StringTokenizer(line, ",");
-	        custInfo.set(tokenizer.nextToken());
-	        custInfo.append("," + tokenizer.nextToken());
-	        custInfo.append("," + tokenizer.nextToken());
-	        String countryCode = tokenizer.nextToken();
-	        custInfo.append("," + tokenizer.nextToken());
+	        String[] result = line.split(",");
+	        String countryCode = result[3];
 	        IntWritable k = new IntWritable();
 	        try {
 	        	k.set(Integer.parseInt(countryCode));
 	        } catch (NumberFormatException e) {
 	        	//e.printStackTrace();
 	        }
-	        output.collect(k, custInfo);
+	        output.collect(k, value);
 	    }
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
-	    public void reduce(IntWritable key, Iterator<IntWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
+	    public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	    	int code = key.get();
 	    	if(code >= 2 && code <= 6) {
-	    		for(value : values) {
+	    		while(values.hasNext()) {
+	    			Text value = values.next();
 	    			output.collect(key, value);
 	    		}
 	    	}

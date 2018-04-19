@@ -17,10 +17,9 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	        String custID = result[1];
 	        String transValue = result[2];
 	        IntWritable kcustID = new IntWritable();
-	        FloatWritable vtransValue = new FloatWritable();
+	        Text vtransValue = new Text(transValue);
 	        try {
 	        	kcustID.set(Integer.parseInt(custID));
-	        	vtransValue.set(Float.parseFloat(transValue));
 	        } catch (NumberFormatException e) {
 	        	//e.printStackTrace();
 	        }
@@ -28,13 +27,37 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    }
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, FloatWritable, IntWritable, Text> {
-	    public void reduce(IntWritable key, Iterator<FloatWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+	public class Combiner extends Reducer<IntWritable, Text, IntWritable, Text>{
+
+		public void reduce(IntWritable key, Iterator<FloatWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException, InterruptedException {
+    		String out = "";
+    		boolean first = true;
+    		while(values.hasNext()) {
+    			if(!first) out+=",";
+    			else first = false;
+    			out+=values.next();
+    		}
+
+    		output.collect(key, new Text(out));
+
+		}
+	}
+
+	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
+	    public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	    	int count = 0;
 	    	float total = 0;
-	    	while(values.hasNext()) {
-	    		count+=1;
-	    		total+=values.next();
+	    	try {
+	    		while(values.hasNext()) {
+	    			String[] result = values.next().split(",");
+	    			for(int i = 0; i < result.length; i++) {
+	    				count+=1;
+	    				total+=Float.parseFloat(result[i]);
+	    			}
+	    			
+	    		}
+	    	} catch(NumberFormatException e) {
+	    		// e.printStackTrace();
 	    	}
 	    	String val = key + "," + count + "," + total;
 	    	Text fval = new Text(val);
@@ -50,7 +73,7 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    conf.setOutputValueClass(Text.class);
 	
 	    conf.setMapperClass(Map.class);
-	    conf.setCombinerClass(Reduce.class);
+	    conf.setCombinerClass(Combiner.class);
 	    conf.setReducerClass(Reduce.class);
 	
 	    conf.setInputFormat(TextInputFormat.class);

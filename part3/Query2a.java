@@ -8,9 +8,8 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
 public class Query2a { // operates on transactions: TransID, CustID, TransValue, TransNumItems, TransDesc
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
+	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, FloatWritable> {
 	    
-	
 	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, FloatWritable> output, Reporter reporter) throws IOException {
 	        String line = value.toString();
 	        String[] result = line.split(",");

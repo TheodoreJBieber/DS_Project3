@@ -2,7 +2,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-/** Theodore Bieber
+/** 
+ * @author Theodore Bieber
  * Distributed Systems
  * Project 3
  *
@@ -30,6 +31,7 @@ public class Customer implements Datatype {
 		attributes.put("Salary", Double.toString(salary));
 	}
 	
+	// primary key for customers is their ID
 	public String getPrimaryKey() {
 		return "ID";
 	}

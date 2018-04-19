@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
-/** Theodore Bieber
+/** 
+ * @author Theodore Bieber
  * Distributed Systems
  * Project 3
  *

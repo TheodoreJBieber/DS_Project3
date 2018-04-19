@@ -6,12 +6,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
-/** Theodore Bieber
+/** 
+ * @author Theodore Bieber
  * Distributed Systems
  * Project 3
  *
  * A program that creates two datasets and lists them into .txt in csv format
- * USAGE: javac -cp . DataWriter <# Customers> <# Transactions>
+ * USAGE: javac -cp . DataWriter <# Customers> <# Transactions> (also detailed in readme.txt)
  */
 public final class DataWriter {
 
@@ -71,7 +72,6 @@ public final class DataWriter {
 		}
 
 	}
-
 
 	public void writeToCSV(File csv, Datatype entry, Boolean collectPKs) throws IOException {
 		FileWriter fw = new FileWriter(csv.getName(), true); // append to end of file

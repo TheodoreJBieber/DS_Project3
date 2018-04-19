@@ -2,7 +2,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-/** Theodore Bieber
+/** 
+ * @author Theodore Bieber
  * Distributed Systems
  * Project 3
  *
@@ -30,6 +31,7 @@ public class Transaction implements Datatype {
 		attributes.put("TransDesc", transDesc);
 	}
 	
+	// primary key for transactions is their ID
 	public String getPrimaryKey() {
 		return "TransID";
 	}
@@ -80,12 +82,12 @@ public class Transaction implements Datatype {
 			rand = new Random();
 			adjusted = rand.nextInt(5000000) + 1;
 			return adjusted.toString();
-		} else if (key.equals("CustID")) { // don't change value for foreign key
+		} else if (key.equals("CustID")) { // keep foreign key as it is
 			return this.attributes.get(key);
 		} else if (key.equals("TransValue")) { 
 			rand = new Random();
 			adjustedDouble = (10000.0 - 10.0)*rand.nextDouble() + 10.0;
-			return String.valueOf(Math.round(adjustedDouble * 100.0) / 100.0); // round to hundredths place (cents)
+			return String.valueOf(Math.round(adjustedDouble * 100.0) / 100.0); // round to cents
 		} else if (key.equals("TransNumItems")) {
 			rand = new Random();
 			adjusted = rand.nextInt(10) + 1;

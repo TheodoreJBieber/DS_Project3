@@ -48,7 +48,7 @@ public class Query2a { // operates on transactions: TransID, CustID, TransValue,
 	    conf.setOutputValueClass(Text.class);
 	
 	    conf.setMapperClass(Map.class);
-	    conf.setCombinerClass(Reduce.class);
+	    // conf.setCombinerClass(Reduce.class); // disable combiner for this
 	    conf.setReducerClass(Reduce.class);
 	
 	    conf.setInputFormat(TextInputFormat.class);

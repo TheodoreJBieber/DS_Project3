@@ -16,10 +16,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 public class Query3 {
-	public static class CusMap extends MapReduceBase implements Mapper<LongWritable, Text, LongWritable, Text> {
+	public static class CusMap extends Mapper<LongWritable, Text, LongWritable, Text> {
 		private LongWritable customersID = new LongWritable();
-	    private Text word = new Text();
-	    private String custInfo;
+	    private Text customerInfo = new Text();
+		private String fileTag = "C";
 	
 	    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			String line = value.toString();
@@ -29,14 +29,14 @@ public class Query3 {
 			float salary = Float.parseFloat(splits[4]);
 
 			customersID.set(cusID);
-			customerInfo.set(fileTag+","+name+","+Float.toString(salary));
+			customerInfo.set(fileTag + "," + name + "," + salary);
 			context.write(customersID, customerInfo);
 		}
 	}
 
-	public static class TransMap extends MapReduceBase implements Mapper<LongWritable, Text, LongWritable, Text> {
+	public static class TransMap extends Mapper<LongWritable, Text, LongWritable, Text> {
 	    private LongWritable customersID = new LongWritable();
-	  	private Long cusID; // TODO: ?
+	  	private Long cusID;
 	  	private Text transInfo= new Text();
 	  	private String fileTag = "T";
 	  	private String transNum ;
@@ -50,12 +50,12 @@ public class Query3 {
 		  	transTotal = splits[2];
 		  	customersID.set(cusID);
 
-		  	transInfo.set(fileTag + "," + "1," + transTotal+","+transNum);
+		  	transInfo.set(fileTag + "," + "1," + transTotal + "," + transNum);
 		  	context.write(customersID, transInfo);
  		}
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<LongWritable, Text, LongWritable, Text> {
+	public static class Reduce extends Reducer<LongWritable, Text, LongWritable, Text> {
 	    String name;
 	  	String salary;
 	  	int numTrans ;
@@ -66,17 +66,17 @@ public class Query3 {
 		  	numTrans = 0;
 		  	sumTotal = 0;  
 		  	minnum = 10;
-		  	for (Text val : values) {
-			  	if (val.toString().split(",")[0].equals("C")) {
+		  	for(Text val : values) {
+			  	if(val.toString().split(",")[0].equals("C")) {
 				  	name = val.toString().split(",")[1];
 				  	salary = val.toString().split(",")[2];
-			  	} else if (val.toString().split(",")[0].equals("T")) {
+			  	} else if(val.toString().split(",")[0].equals("T")) {
 				  	String num = val.toString().split(",")[1];
 				  	numTrans +=Integer.parseInt(num);
 				  	String transTotal = val.toString().split(",")[2];
 				  	sumTotal += Float.parseFloat(transTotal);
 				  	transNumItem = Integer.parseInt(val.toString().split(",")[3]);
-				  	if (transNumItem<minnum){
+				  	if(transNumItem<minnum) {
 					  	minnum = transNumItem;
 				  	}
 			  	}
@@ -91,7 +91,7 @@ public class Query3 {
 	public static void main(String[] args) throws Exception{
 
 		Configuration conf = new Configuration();
-    	if (args.length != 3) {
+    	if(args.length != 3) {
       		System.err.println("Usage: query3 <HDFS input file1> <HDFS input file2> <HDFS output file>");
       		System.exit(3);
     	}
@@ -107,8 +107,8 @@ public class Query3 {
     	job.setOutputValueClass(Text.class);
     	job.setInputFormatClass(TextInputFormat.class);
 
-    	MultipleInputs.addInputPath(job, cusInputPath, TextInputFormat.class, cusMap.class);
-   	 	MultipleInputs.addInputPath(job, transInputPath, TextInputFormat.class, transMap.class);
+    	MultipleInputs.addInputPath(job, cusInputPath, TextInputFormat.class, CusMap.class);
+   	 	MultipleInputs.addInputPath(job, transInputPath, TextInputFormat.class, TransMap.class);
     	FileOutputFormat.setOutputPath(job, outputPath);
     	System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}

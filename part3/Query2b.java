@@ -27,15 +27,15 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    }
 	}
 
-	public class Combiner extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>{
+	public static class Combiner extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>{
 
-		public void reduce(IntWritable key, Iterator<FloatWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException, InterruptedException {
+		public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
     		String out = "";
     		boolean first = true;
     		while(values.hasNext()) {
     			if(!first) out+=",";
     			else first = false;
-    			out+=values.next();
+    			out+=values.next().toString();
     		}
 
     		output.collect(key, new Text(out));
@@ -49,7 +49,7 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    	float total = 0;
 	    	try {
 	    		while(values.hasNext()) {
-	    			String[] result = values.next().split(",");
+	    			String[] result = values.next().toString().split(",");
 	    			for(int i = 0; i < result.length; i++) {
 	    				count+=1;
 	    				total+=Float.parseFloat(result[i]);

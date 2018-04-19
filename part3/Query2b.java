@@ -11,7 +11,7 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
 	    
 	
-	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, FloatWritable> output, Reporter reporter) throws IOException {
+	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	        String line = value.toString();
 	        String[] result = line.split(",");
 	        String custID = result[1];
@@ -27,7 +27,7 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    }
 	}
 
-	public class Combiner extends Reducer<IntWritable, Text, IntWritable, Text>{
+	public class Combiner extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>{
 
 		public void reduce(IntWritable key, Iterator<FloatWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException, InterruptedException {
     		String out = "";

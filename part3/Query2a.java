@@ -8,18 +8,17 @@ import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
 public class Query2a { // operates on transactions: TransID, CustID, TransValue, TransNumItems, TransDesc
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, FloatWritable> {
+	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
 	    
-	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, FloatWritable> output, Reporter reporter) throws IOException {
+	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	        String line = value.toString();
 	        String[] result = line.split(",");
 	        String custID = result[1];
 	        String transValue = result[2];
 	        IntWritable kcustID = new IntWritable();
-	        FloatWritable vtransValue = new FloatWritable();
+	        Text vtransValue = new Text(transValue);
 	        try {
 	        	kcustID.set(Integer.parseInt(custID));
-	        	vtransValue.set(Float.parseFloat(transValue));
 	        } catch (NumberFormatException e) {
 	        	//e.printStackTrace();
 	        }
@@ -27,13 +26,13 @@ public class Query2a { // operates on transactions: TransID, CustID, TransValue,
 	    }
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, FloatWritable, IntWritable, Text> {
-	    public void reduce(IntWritable key, Iterator<FloatWritable> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
+	    public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
 	    	int count = 0;
 	    	float total = 0;
 	    	while(values.hasNext()) {
 	    		count+=1;
-	    		total+=values.next();
+	    		total+=Float.parseFloat(values.next());
 	    	}
 	    	String val = key + "," + count + "," + total;
 	    	Text fval = new Text(val);

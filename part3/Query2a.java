@@ -37,8 +37,8 @@ public class Query2a { // operates on transactions: TransID, CustID, TransValue,
 	    	int count = 0;
 	    	float total = 0;
 	    	while(values.hasNext()) {
-	    		count+=1;
-	    		total+=Float.parseFloat(values.next());
+	    		count += 1;
+	    		total += Float.parseFloat(values.next().toString());
 	    	}
 	    	String val = key + "," + count + "," + total;
 	    	Text fval = new Text(val);
@@ -50,11 +50,11 @@ public class Query2a { // operates on transactions: TransID, CustID, TransValue,
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 	    Job job = new Job(conf, "query2a");
-		job.setJarByClass(Query2.class);
+		job.setJarByClass(Query2a.class);
     	job.setMapperClass(Map.class);
     	// job.setCombinerClass(Combiner.class); // no combiner for this part
     	job.setReducerClass(Reduce.class);
-    	job.setOutputKeyClass(LongWritable.class);
+    	job.setOutputKeyClass(IntWritable.class);
     	job.setOutputValueClass(Text.class);
     	FileInputFormat.addInputPath(job, new Path(args[0]));
     	FileOutputFormat.setOutputPath(job, new Path(args[1]));

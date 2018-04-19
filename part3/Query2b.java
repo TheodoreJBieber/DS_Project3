@@ -1,17 +1,23 @@
 import java.io.IOException;
-import java.util.*;
+import java.util.Iterator;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.util.*;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.GenericOptionsParser;
 
 public class Query2b { // operates on transactions: TransID, CustID, TransValue, TransNumItems, TransDesc
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
+	public static class Map extends Mapper<LongWritable, Text, IntWritable, Text> {
 	    
 	
-	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+	    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 	        String line = value.toString();
 	        String[] result = line.split(",");
 	        String custID = result[1];
@@ -23,13 +29,13 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	        } catch (NumberFormatException e) {
 	        	//e.printStackTrace();
 	        }
-	        output.collect(kcustID, vtransValue);
+	        context.write(kcustID, vtransValue);
 	    }
 	}
 
-	public static class Combiner extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text>{
+	public static class Combiner extends Reducer<IntWritable, Text, IntWritable, Text>{
 
-		public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+		public void reduce(IntWritable key, Iterator<Text> values, Context context) throws IOException, InterruptedException {
     		String out = "";
     		boolean first = true;
     		while(values.hasNext()) {
@@ -38,13 +44,13 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
     			out+=values.next().toString();
     		}
 
-    		output.collect(key, new Text(out));
+    		context.write(key, new Text(out));
 
 		}
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
-	    public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
+	public static class Reduce extends Reducer<IntWritable, Text, IntWritable, Text> {
+	    public void reduce(IntWritable key, Iterator<Text> values, Context context) throws IOException, InterruptedException {
 	    	int count = 0;
 	    	float total = 0;
 	    	try {
@@ -62,26 +68,21 @@ public class Query2b { // operates on transactions: TransID, CustID, TransValue,
 	    	String val = key + "," + count + "," + total;
 	    	Text fval = new Text(val);
 
-	    	output.collect(key, fval); // key is the customer id, value is CustID,NumTransactions,TotalValue
+	    	context.write(key, fval); // key is the customer id, value is CustID,NumTransactions,TotalValue
 	    }
 	}
 	
 	public static void main(String[] args) throws Exception {
-	    JobConf conf = new JobConf(Query2b.class);
-	    conf.setJobName("query2b");
-		conf.setOutputKeyClass(IntWritable.class);
-	    conf.setOutputValueClass(Text.class);
-	
-	    conf.setMapperClass(Map.class);
-	    conf.setCombinerClass(Combiner.class);
-	    conf.setReducerClass(Reduce.class);
-	
-	    conf.setInputFormat(TextInputFormat.class);
-	    conf.setOutputFormat(TextOutputFormat.class);
-	
-	    FileInputFormat.setInputPaths(conf, new Path(args[0]));
-	    FileOutputFormat.setOutputPath(conf, new Path(args[1]));
-	
-	    JobClient.runJob(conf);
+		Configuration conf = new Configuration();
+	    Job job = new Job(conf, "query2b");
+		job.setJarByClass(Query2b.class);
+    	job.setMapperClass(Map.class);
+    	job.setCombinerClass(Combiner.class);
+    	job.setReducerClass(Reduce.class);
+    	job.setOutputKeyClass(IntWritable.class);
+    	job.setOutputValueClass(Text.class);
+    	FileInputFormat.addInputPath(job, new Path(args[0]));
+    	FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    	System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 }

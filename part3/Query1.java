@@ -1,41 +1,31 @@
 import java.io.IOException;
-import java.util.*;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.util.*;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper.Context;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.GenericOptionsParser;
 
 public class Query1 {
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
-	    private Text word = new Text();
-	    private String custInfo;
-	
-	    public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
-	        String line = value.toString();
-	        String[] result = line.split(",");
-	        String countryCode = result[3];
-	        IntWritable k = new IntWritable();
-	        try {
-	        	k.set(Integer.parseInt(countryCode));
-	        } catch (NumberFormatException e) {
-	        	//e.printStackTrace();
-	        }
-	        output.collect(k, value);
-	    }
-	}
-
-	public static class Reduce extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
-	    public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
-	    	int code = key.get();
-	    	if(code >= 2 && code <= 6) {
-	    		while(values.hasNext()) {
-	    			Text value = values.next();
-	    			output.collect(key, value);
-	    		}
-	    	}
-	    }
+	public static class Map extends Mapper<LongWritable, Text, IntWritable, Text> {
+	    private IntWritable countryID = new IntWritable();
+	  	private Text customerInfo = new Text();
+   	
+	  	public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+		  	String line = value.toString();
+		  	String[] result = line.split(",");
+		  	int countryCode = Integer.parseInt(result[3]);
+		  	if (countryCode >= 2 && countryCode <= 6) {
+			  	countryID.set(countryCode);
+			  	customerInfo.set(line);
+			  	context.write(countryID, customerInfo);
+		  	}
+ 		}
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -45,8 +35,8 @@ public class Query1 {
 	    conf.setOutputValueClass(Text.class);
 	
 	    conf.setMapperClass(Map.class);
-	    conf.setCombinerClass(Reduce.class);
-	    conf.setReducerClass(Reduce.class);
+	    // conf.setCombinerClass(Reduce.class);
+	    // conf.setReducerClass(Reduce.class);
 	
 	    conf.setInputFormat(TextInputFormat.class);
 	    conf.setOutputFormat(TextOutputFormat.class);

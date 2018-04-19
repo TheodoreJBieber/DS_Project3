@@ -1,0 +1,21 @@
+Part 2:
+
+The commands I used to put files onto the hadoop fs were:
+
+sudo hadoop fs -put customers.txt /home/hadoop/input
+sudo hadoop fs -put transactions.txt /home/hadoop/input
+
+to double check that they were there, i copied them back onto my desktop
+
+sudo hadoop fs -copyToLocal /home/hadoop/input /home/hadoop/Desktop/
+
+and the files showed up on my desktop, so I knew it worked.
+
+compiling a query:
+
+javac -classpath /usr/share/hadoop/hadoop-core-1.2.1.jar -d classes_directory_name ./JavaFileName.java
+jar -cvf ./JavaFileName.jar -C classes_directory_name/ .
+
+running the job:
+
+sudo hadoop jar ./JavaFileName.jar MainClassName <input file path> <new output file path>

@@ -29,21 +29,18 @@ public class Query1 {
 	}
 	
 	public static void main(String[] args) throws Exception {
-	    JobConf conf = new JobConf(Query1.class);
-	    conf.setJobName("query1");
-		conf.setOutputKeyClass(IntWritable.class);
-	    conf.setOutputValueClass(Text.class);
+	    Configuration conf = new Configuration();
+	    Job job = new Job(conf, "query1");
+		job.setJarByClass(Query1.class);
+    	job.setMapperClass(Map.class);
 	
-	    conf.setMapperClass(Map.class);
-	    // conf.setCombinerClass(Reduce.class);
-	    // conf.setReducerClass(Reduce.class);
+	    // job.setCombinerClass(Reduce.class); // dont need combiner or reducer for this
+	    // job.setReducerClass(Reduce.class);
 	
-	    conf.setInputFormat(TextInputFormat.class);
-	    conf.setOutputFormat(TextOutputFormat.class);
-	
-	    FileInputFormat.setInputPaths(conf, new Path(args[0]));
-	    FileOutputFormat.setOutputPath(conf, new Path(args[1]));
-	
-	    JobClient.runJob(conf);
+	    job.setOutputKeyClass(IntWritable.class);
+    	job.setOutputValueClass(Text.class);
+    	FileInputFormat.addInputPath(job, new Path(args[0]));
+    	FileOutputFormat.setOutputPath(job, new Path(args[1]));
+    	System.exit(job.waitForCompletion(true) ? 0 : 1);
 	}
 }
